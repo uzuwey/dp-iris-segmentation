@@ -180,26 +180,32 @@ const MyComponent = () => {
         loaded ? 
         (
           <div>
-            <div>
+            <div style={{margin: '10px 0px'}}>
               <input type='file' onChange={handleOnChange}></input>
             </div>
             <div>
-              <canvas id='outCanvas' style={{width: '480px', height: '480px'}}></canvas>
-              <canvas id='outCanvas2' style={{width: '480px', height: '480px'}} ref={canvasRef}></canvas>
+              <div>
+                <canvas id='outCanvas' style={{width: '480px', height: '480px', border: '1px solid black'}}></canvas>
+                <canvas id='outCanvas2' style={{width: '480px', height: '480px', border: '1px solid red', marginLeft:'10px'}} ref={canvasRef}></canvas>
+                <img ref={imgRef} onLoad={imgOnLoad} alt='err' style={{display: 'none'}} src={imageUrl}/>
+              </div>
 
-              <img ref={imgRef} onLoad={imgOnLoad} alt='err' style={{display: 'none'}} src={imageUrl}/>
-              <button type="button" onClick={handlePrediction}>Predict</button>
+              <button type="button" onClick={handlePrediction} style={{margin: '10px 0px'}}>Predict</button>
             </div>
             <div>
-              <Webcam
-                audio={false}
-                height={640}
-                ref={webcamRef}
-                screenshotFormat="image/jpeg"
-                // videoConstraints={videoConstraints}
-                width={640}
-              />
-              <button className="btn bg-primary text-white" onClick={capture}>Capture photo</button>
+              <div>
+                <Webcam
+                  audio={false}
+                  height={640}
+                  ref={webcamRef}
+                  screenshotFormat="image/jpeg"
+                  // videoConstraints={videoConstraints}
+                  width={640}
+                />
+              </div>
+              <div style={{margin: '10px 0px'}}>
+                <button className="btn bg-primary text-white" onClick={capture}>Capture photo</button>
+              </div>
             </div>
           </div>
         )
