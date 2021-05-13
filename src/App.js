@@ -1,7 +1,9 @@
 import './App.css';
 import { OpenCvProvider } from 'opencv-react';
 import React from 'react';
-import { MyComponent } from './components'
+import { MainComponent } from './components';
+import { AlertProvider } from './helpers/contexts/AlertContext';
+import { Alert } from './components';
 
 function App() {
 
@@ -11,9 +13,12 @@ function App() {
 
   return (
     <div className="App">
-      <OpenCvProvider onLoad={onLoaded}>
-        <MyComponent />
-      </OpenCvProvider>
+      <AlertProvider>
+        <OpenCvProvider onLoad={onLoaded}>
+          <MainComponent />
+          <Alert />
+        </OpenCvProvider>
+      </AlertProvider>
     </div>
   );
 }
