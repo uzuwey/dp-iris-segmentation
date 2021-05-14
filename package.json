@@ -1,5 +1,5 @@
 {
-  "name": "DP_iris_segmentation",
+  "name": "dp-iris-segmentation",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
