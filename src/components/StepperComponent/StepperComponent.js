@@ -16,12 +16,12 @@ const StepperComponent = ({image, cv}) => {
   const alert = useContext(AlertContext);
 
   useEffect(()=> {
-    tf.loadLayersModel('ubiris_3x3_32/model.json').then(data => {
+    tf.loadLayersModel('csip_7x7_16/model.json').then(data => {
       setModel(data);
     })
     .catch(err => {
-      alert.error('Error', 5);
-      console.log(err);
+      alert.error('Model does not load properly', 5);
+      console.error(err);
     })
   }, []);
   
@@ -52,44 +52,55 @@ const StepperComponent = ({image, cv}) => {
       })
       .catch(err => {
         alert.error('Error', 5);
-        console.log(err);
-      })
+        console.error(err);
+      });
   };
 
   const detectEye = (image) => {
-    if(classifier) {
-      let gray = new cv.Mat();
-      let eyes = new cv.RectVector();
-
-      cv.cvtColor(image, gray, cv.COLOR_RGBA2GRAY, 0);
-      classifier.detectMultiScale(gray, eyes, 1.1, 3, 0);
-
-      let eye = eyes.get(0);
-      gray.delete();
-
-      if(!eye) {
-        return;
-      }
-
-      for (let i = 0; i < eyes.size(); ++i) {           
-        let tmpEye = eyes.get(i)
-        if(eye.width < tmpEye.width) {
-          eye = tmpEye;
+    try {
+      if(classifier) {
+        let time1 = performance.now(); 
+  
+        let gray = new cv.Mat();
+        let eyes = new cv.RectVector();
+  
+        cv.cvtColor(image, gray, cv.COLOR_RGBA2GRAY, 0);
+        classifier.detectMultiScale(gray, eyes, 1.1, 3, 0);
+  
+        let eye = eyes.get(0);
+        gray.delete();
+  
+        if(!eye) {
+          return;
         }
+  
+        for (let i = 0; i < eyes.size(); ++i) {           
+          let tmpEye = eyes.get(i)
+          if(eye.width < tmpEye.width) {
+            eye = tmpEye;
+          }
+        }
+  
+        if(eye.height > 480 && eye.width > 480) {
+          eye = reduceEye(eye);
+        } else {
+          eye = addPaddingToEye(eye);
+        }
+        let dst = image.roi(eye);
+        image.delete();
+  
+        cv.imshow('outCanvas1', dst);
+        dst.delete();
+  
+        let time2 = performance.now(); 
+  
+        console.log(`Eye detection took ${(time2 - time1)} milliseconds.`)
+  
+        makePrediction();
       }
-
-      if(eye.height > 480 && eye.width > 480) {
-        eye = reduceEye(eye);
-      } else {
-        eye = addPaddingToEye(eye);
-      }
-      let dst = image.roi(eye)  
-      image.delete();
-
-      cv.imshow('outCanvas1', dst);
-      dst.delete();
-      
-      makePrediction();
+    } catch (err) {
+      alert.error('Model does not load properly', 5);
+      console.error(err);
     }
   }
 
@@ -100,6 +111,8 @@ const StepperComponent = ({image, cv}) => {
 
   const makePrediction = useCallback(() => {
 
+    var time1 = performance.now();
+
     const tensor = tf.tidy(() => tf.browser.fromPixels(canvasRef.current, 3)
       .resizeNearestNeighbor([480,480])
       .expandDims()
@@ -108,6 +121,11 @@ const StepperComponent = ({image, cv}) => {
       .reverse(0));
 
     let prediction = model.predict(tensor);
+
+    var time2 = performance.now();
+
+    console.log(`Image prediction took ${(time2 - time1)} milliseconds.`)
+
 
     tf.browser.toPixels(prediction.squeeze()).then(
       r => {
